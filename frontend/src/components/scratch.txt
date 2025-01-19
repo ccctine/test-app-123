@@ -1,0 +1,594 @@
+
+// import React, { useEffect } from 'react';
+// import { useLocation, useNavigate } from 'react-router-dom';
+// import '../Results.css'; // Ensure this includes all necessary styles
+
+// const recommendations = {
+//     'Banana Aphids': {
+//         treatment: 'Apply insecticides or neem oil to control the aphids.\nPrune affected leaves to reduce the aphid population.',
+//         prevention: 'Use reflective mulches to deter aphids.\nIntroduce natural predators such as ladybugs.\nMonitor plants regularly for aphid infestation.'
+//     },
+//     'Black Sigatoka': {
+//         treatment: 'Fungicide applications can help control Black Sigatoka.\nRotate fungicides with different modes of action to prevent resistance.',
+//         prevention: 'Remove and destroy infected leaves.\nUse resistant banana varieties.\nEnsure proper plant spacing.\nApply foliar sprays with fungicides.\nImplement cultural practices like pruning and de-leafing.'
+//     },
+//     'Erwinia Rot': {
+//         treatment: [
+//             'Apply copper-based bactericides or disinfectants to slow the spread of soft rot, though effectiveness may be limited.'
+//         ],
+//         prevention: 
+//             'Avoid injury to the plants, as the bacterium enters through wounds.\n\nEnsure good drainage to reduce wet conditions that promote bacterial growth.\nRemove and destroy infected plant tissues.\nMaintain proper plant spacing for adequate air circulation.\nSterilize tools and equipment between uses to avoid spreading the bacteria. '
+    
+//     },
+//     'Panama Disease': {
+//         treatment: 'There is no effective chemical treatment for Panama disease once it infects a plant. Infected plants should be uprooted and destroyed to prevent further spread.',
+//         prevention: [
+//             'Use disease-resistant varieties (though the Cavendish is highly susceptible). ',
+//             'Implement strict sanitation measures, such as cleaning tools and machinery after working in infected fields. ',
+//             'Apply crop rotation with non-host crops like rice or maize to reduce pathogen levels in the soil. ',
+//             'Maintain good drainage to prevent waterlogging and reduce disease severity. ',
+//             'Biosecurity practices to prevent movement of contaminated soil and plant material. '
+
+//         ]
+
+
+//     },
+//     'Pseudostem Weevil': {
+//         treatment: '   - **Treatment**: lorem ipsum.',
+//         prevention: `  
+//             - **Prevention**:  
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//         `
+//     },
+
+//     'Yellow Sigatoka': {
+//         treatment: '   - **Treatment**: lorem ipsum.',
+//         prevention: `  
+//             - **Prevention**:  
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//             - lorem ipsum
+//         `
+//     },
+
+//     'Healthy': {
+//         treatment: 'N/A',
+//         prevention: 'N/A',
+//     }
+// };
+
+// const Results = () => {
+//     const location = useLocation();
+//     const navigate = useNavigate();
+//     const { prediction, image } = location.state || { prediction: 'No prediction available', image: null };
+
+//     const { treatment, prevention } = recommendations[prediction] || { treatment: 'No treatment available', prevention: 'No prevention available' };
+
+//     const renderBulletedLines = (text) => {
+//         const lines = text.split('\n');
+//         return (
+//             <ul>
+//                 {lines.map((line, index) => line.trim() !== '' && <li key={index}>{line}</li>)}
+//             </ul>
+//         );
+//     };
+
+//     return (
+//         <div className="results-container">
+//             <div className="sidebar">
+//                 <ul>
+//                     <li><a href="/">Home</a></li>
+//                     <li><a href="/dashboard">Dashboard</a></li>
+//                     <li><a href="/logout">Log Out</a></li>
+//                 </ul>
+//             </div>
+
+//             <div className="content">
+//                 <div className="result-flexbox">
+//                     {/* Display the uploaded image */}
+//                     {image && (
+//                         <div className="uploaded-image">
+//                             <img src={image} alt="Uploaded" />
+//                         </div>
+//                     )}
+
+//                     <div className="details">
+//                         <h2>Predicted Disease: {prediction}</h2>
+//                         <div className="treatment">
+//                             <h3>Treatment:</h3>
+//                             {renderBulletedLines(treatment)}
+//                         </div>
+//                         <div className="prevention">
+//                             <h3>Prevention:</h3>
+//                             {renderBulletedLines(prevention)}
+//                         </div>
+//                     </div>
+//                 </div>
+
+//                 <div className="button-container">
+//                     <button onClick={handleSave}>Save</button>
+//                     <button onClick={handleRetry}>Retry</button>
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
+
+
+// export default Results;
+
+
+// for upload //
+
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
+import "../App.css"; // Assuming you have a CSS file for styling
+
+function ImageUpload() {
+    const [file, setFile] = useState(null);
+    const [prediction, setPrediction] = useState('');
+    const [imagePreview, setImagePreview] = useState(''); // State for image preview
+    const navigate = useNavigate(); // Initialize the navigate function
+
+    // Function to resize the image to 256x256 using canvas and convert to JPEG
+    const resizeImageToJpeg = (file, callback) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+
+        reader.onload = function (event) {
+            const img = new Image();
+            img.src = event.target.result;
+
+            img.onload = function () {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 256;
+
+                // Draw the image on the canvas to resize it
+                ctx.drawImage(img, 0, 0, 256, 256);
+
+                // Convert canvas back to a JPEG blob
+                canvas.toBlob((blob) => {
+                    const jpegFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                        type: 'image/jpeg',
+                        lastModified: Date.now(),
+                    });
+
+                    // Callback to set the JPEG file
+                    callback(jpegFile);
+                }, 'image/jpeg');  // Force JPEG format
+            };
+
+            img.onerror = function () {
+                console.error('Error loading image for resizing.');
+            };
+        };
+
+        reader.onerror = function () {
+            console.error('Error reading file for resizing.');
+        };
+    };
+
+    // Handle image file selection (both upload and capture)
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (!selectedFile) {
+            console.error('No file selected');
+            return;
+        }
+
+        // Resize image and then convert to JPEG
+        resizeImageToJpeg(selectedFile, (jpegFile) => {
+            setFile(jpegFile);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result); // Set the preview image
+            };
+            reader.readAsDataURL(jpegFile);
+        });
+    };
+
+    // Handle form submission and send file to backend
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!file) {
+            // Prompt error message if no image is selected
+            alert('Please select or capture an image first.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('http://127.0.0.1:5000/predict', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Redirect to the Results page with the prediction and image preview
+            navigate('/results', { state: { prediction: response.data.prediction, image: imagePreview } });
+
+        } catch (err) {
+            setPrediction('Error occurred during prediction');
+        }
+    };
+
+    return (
+        <div className="image-upload-container">
+            {/* Sidebar */}
+            <div className="sidebar">
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                </ul>
+            </div>
+
+            {/* Main Content */}
+            <div className="main-content">
+                <div className="icon-container">
+                    {/* Capture Button */}
+                    <label className="icon-button">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            capture="camera"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }} // Hidden file input
+                        />
+                        <div className="icon capture-icon"></div>
+                        <span>Capture</span>
+                    </label>
+
+                    {/* Upload Button */}
+                    <label className="icon-button">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            style={{ display: 'none' }} // Hidden file input
+                        />
+                        <div className="icon upload-icon"></div>
+                        <span>Upload</span>
+                    </label>
+                </div>
+
+                {/* Submit Button */}
+                <form onSubmit={handleSubmit} className="submit-form">
+                    <button type="submit">Submit for Prediction</button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+export default ImageUpload;
+
+
+<h2 className="sidebar-title">Image Upload System</h2> {/* Title at the top */}
+
+
+
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext"; // Import the useAuth hook
+import '../Results.css'; // Ensure this includes all necessary styles
+
+const recommendations = {
+    'Banana Aphids': {
+        symptoms: [
+            'Yellowing and curling of leaves: Aphids feed on sap, leading to leaf discoloration and distortion.',
+            'Stunted plant growth: Heavy infestations reduce growth and vigor.',
+            'Honeydew secretion: Sticky substance that promotes sooty mold growth on leaves and attracts ants.',
+            'Bunched leaves: Aphids can spread the Banana Bunchy Top Virus (BBTV), causing leaves to bunch at the top.'
+        ],
+        treatment: 'Insecticidal Soap or Oil. Systemic Insecticides. Biological Control.',
+        prevention: 'Regular Monitoring. Remove Weeds. Plant Resistant Varieties. Mulching. Control Ants.',
+        riskSeason: 'Warm, humid seasons'
+    },
+    'Black Sigatoka': {
+        symptoms: [
+            'Dark streaks on leaves.',
+            'Yellowing of leaves.',
+            'Premature leaf death.',
+            'Reduced fruit size.'
+        ],
+        treatment: 'Fungicide applications can help control Black Sigatoka, but the disease has developed resistance to some chemicals. Rotate fungicides with different modes of action to prevent resistance.',
+        prevention: 'Remove and destroy infected leaves to reduce the source of fungal spores. Use resistant or tolerant banana varieties if available. Ensure proper plant spacing to allow air circulation and reduce humidity. Apply foliar sprays with fungicides (e.g., strobilurins, triazoles). Implement cultural practices like pruning and de-leafing to reduce disease spread.',
+        riskSeason: 'Rainy season, high humidity'
+    },
+    // Continue updating other diseases similarly...
+};
+
+// In the Results component
+const Results = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+
+    const { 
+        prediction = 'No prediction available', 
+        confidence = 'N/A', 
+        severity = 'N/A', 
+        image 
+    } = location.state || {};
+
+    // Log the values to see what is being passed
+    useEffect(() => {
+        console.log("Fetched location state:", location.state);
+        console.log("Prediction: ", prediction);
+        console.log("Confidence: ", confidence);
+        console.log("Severity: ", severity);
+    }, [location.state]);
+
+    // Ensure confidence is a number or handle as needed
+    const confidenceDisplay = (typeof confidence === 'number' || !isNaN(Number(confidence))) 
+        ? Number(confidence).toFixed(2) 
+        : 'N/A';
+
+    const { treatment, prevention, symptoms = [], riskSeason } = recommendations[prediction] || { treatment: 'No treatment available', prevention: 'No prevention available', symptoms: [], riskSeason: 'N/A' };
+
+    const handleSave = async () => {
+        const newResult = {
+            timestamp: new Date().toLocaleString(),
+            disease: prediction,
+            recommendation: `Symptoms: ${symptoms.join(', ')}\nTreatment: ${Array.isArray(treatment) ? treatment.join(' ') : treatment}\nPrevention: ${Array.isArray(prevention) ? prevention.join(' ') : prevention}\nHigher Risk Season: ${riskSeason}`,
+            uploaded_image: image,
+            severity,
+            confidence: confidenceDisplay
+        };
+
+        try {
+            const response = await fetch('http://localhost:5000/save-result', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newResult),
+            });
+
+            if (response.ok) {
+                alert("Results saved successfully!");
+            } else {
+                alert("Failed to save results.");
+            }
+        } catch (error) {
+            console.error("Error saving results:", error);
+        }
+    };
+
+    const handleRetry = () => {
+        navigate('/upload');
+    };
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        logout();
+        navigate('/login');
+    };
+
+    return (
+        <div className="results-container">
+            <div className="sidebar">
+                <h2 className="sidebar-title">BananaGuard</h2>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/logout" onClick={handleLogout}>Log Out</a></li>
+                </ul>
+            </div>
+
+            <div className="content">
+                <div className="result-flexbox">
+                    {image && (
+                        <div className="uploaded-image">
+                            <img src={image} alt="Uploaded" />
+                        </div>
+                    )}
+
+                    <div className="details">
+                        <h2>Predicted Disease: {prediction}</h2>
+                        <h3>Confidence: {confidenceDisplay}%</h3>
+                        <h3>Severity: {severity}</h3>
+                        <div className="symptoms">
+                            <h3>Symptoms:</h3>
+                            {symptoms.map((symptom, index) => (
+                                <p key={index}>{symptom}</p>
+                            ))}
+                        </div>
+                        <div className="treatment">
+                            <h3>Treatment:</h3>
+                            <p>{Array.isArray(treatment) ? treatment.join(' ') : treatment}</p>
+                        </div>
+                        <div className="prevention">
+                            <h3>Prevention:</h3>
+                            <p>{Array.isArray(prevention) ? prevention.join(' ') : prevention}</p>
+                        </div>
+                        <div className="risk-season">
+                            <h3>Higher Risk Season:</h3>
+                            <p>{riskSeason}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="button-container">
+                    <button onClick={handleSave}>Save</button>
+                    <button onClick={handleRetry}>Retry</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Results;
+
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from "../context/AuthContext"; // Import the useAuth hook
+import '../Results.css'; // Ensure this includes all necessary styles
+
+const recommendations = {
+    'Banana Aphids': {
+        symptoms: 'Yellowing and curling of leaves.  Stunted plant growth. Honeydew secretion. Banana Bunchy Top Virus (BBTV).',
+        treatment: 'Insecticidal Soap or Oil. Systemic Insecticides. Biological Control.',
+        prevention: `Regular Monitoring. Remove Weeds. Plant Resistant Varieties. Mulching. Control Ants.`
+    },
+    'Black Sigatoka': {
+        symptoms: 'Dark streaks on leaves. Yellowing of leaves. Premature leaf death. Reduced fruit size.',
+        treatment: 'Fungicide applications can help control Black Sigatoka, but the disease has developed resistance to some chemicals. Rotate fungicides with different modes of action to prevent resistance',
+        prevention: 'Remove and destroy infected leaves to reduce the source of fungal spores. Use resistant or tolerant banana varieties if available. Ensure proper plant spacing to allow air circulation and reduce humidity. Apply foliar sprays with fungicides (e.g., strobilurins, triazoles). Implement cultural practices like pruning and de-leafing to reduce disease spread.'
+    },
+    'Erwinia Rot': {
+        symptoms: 'Water-soaked lesions. Soft, mushy tissue. Rotting pseudostem. Wilting.',
+        treatment: 'Apply copper-based bactericides or disinfectants to slow the spread of soft rot, though effectiveness may be limited.',
+        prevention: 'Avoid injury to the plants, as the bacterium enters through wounds. Ensure good drainage to reduce wet conditions that promote bacterial growth. Remove and destroy infected plant tissues. Maintain proper plant spacing for adequate air circulation. Sterilize tools and equipment between uses to avoid spreading the bacteria.'
+    },
+    'Healthy': {
+        symptoms: 'N/A',
+        treatment: 'N/A',
+        prevention: 'N/A'
+    },
+    'Panama Disease': {
+        symptoms: 'Yellowing of older leaves. Splitting of the pseudostem base.  Internal vascular discoloration. Wilt and collapse.',
+        treatment: 'There is no effective chemical treatment for Panama disease once it infects a plant. Infected plants should be uprooted and destroyed to prevent further spread.',
+        prevention: 'Use disease-resistant varieties (though the Cavendish is highly susceptible). Implement strict sanitation measures, such as cleaning tools and machinery after working in infected fields. Apply crop rotation with non-host crops like rice or maize to reduce pathogen levels in the soil. Maintain good drainage to prevent waterlogging and reduce disease severity. Biosecurity practices to prevent movement of contaminated soil and plant material.'
+    },
+    'Pseudostem Weevil': {
+        symptoms: 'Small holes in the pseudostem. Frass or sawdust-like material. Wilting and yellowing leaves. Collapsed pseudostem.',
+        treatment: 'Insecticide Application. Biological Control. Trapping.',
+        prevention: 'Sanitation. Planting Healthy Suckers. Monitoring and Early Detection. Mulching. '
+    },
+    'Yellow Sigatoka': {
+        symptoms: 'Yellow streaks on leaves. Brown or black spots. Leaf necrosis. Premature leaf death. Smaller, less mature fruits.  ',
+        treatment: 'Fungicide Application. Remove Infected Leaves. Use Resistant Varieties.',
+        prevention: 'Good Field Sanitation. Improve Air Circulation. Monitor Humidity Levels. Plant Nutrition.'
+    },
+    'Banana Moko': {
+        symptoms: 'Wilting of leaves. Chlorosis (yellowing). Internal discoloration. Premature fruit ripening. Stem and flower rot. Vascular streaking.',
+        treatment: 'Antibiotic. Copper-based bactericides. Cut-and-burn method.',
+        prevention: 'Use of certified disease-free planting materials. Good field sanitation.'
+    }
+};
+
+const Results = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { logout } = useAuth();
+
+    const { 
+        prediction = 'No prediction available', 
+        confidence = 'N/A', 
+        severity = 'N/A', 
+        image 
+    } = location.state || {};
+
+    // Log the values to see what is being passed
+    useEffect(() => {
+        console.log("Fetched location state:", location.state);
+        console.log("Prediction: ", prediction);
+        console.log("Confidence: ", confidence);
+        console.log("Severity: ", severity);
+    }, [location.state]);
+
+    // Ensure confidence is a number or handle as needed
+    const confidenceDisplay = (typeof confidence === 'number' || !isNaN(Number(confidence))) 
+        ? Number(confidence).toFixed(2) 
+        : 'N/A';
+
+    const { treatment, prevention, symptoms } = recommendations[prediction] || { treatment: 'No treatment available', prevention: 'No prevention available', symptoms: 'No symptoms available' };
+
+    const handleSave = async () => {
+        const newResult = {
+            timestamp: new Date().toLocaleString(),
+            disease: prediction,
+            recommendation: `Symptoms: ${symptoms}\nTreatment: ${Array.isArray(treatment) ? treatment.join(' ') : treatment}\nPrevention: ${Array.isArray(prevention) ? prevention.join(' ') : prevention}`,
+            uploaded_image: image,
+            severity,
+            confidence: confidenceDisplay
+        };
+
+        try {
+            const response = await fetch('http://localhost:5000/save-result', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newResult),
+            });
+
+            if (response.ok) {
+                alert("Results saved successfully!");
+            } else {
+                alert("Failed to save results.");
+            }
+        } catch (error) {
+            console.error("Error saving results:", error);
+        }
+    };
+
+    const handleRetry = () => {
+        navigate('/upload');
+    };
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        logout();
+        navigate('/login');
+    };
+
+    return (
+        <div className="results-container">
+            <div className="sidebar">
+                <h2 className="sidebar-title">BananaGuard</h2>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <li><a href="/logout" onClick={handleLogout}>Log Out</a></li>
+                </ul>
+            </div>
+
+            <div className="content">
+                <div className="result-flexbox">
+                    {image && (
+                        <div className="uploaded-image">
+                            <img src={image} alt="Uploaded" />
+                        </div>
+                    )}
+
+                    <div className="details">
+                        <h2>Predicted Disease: {prediction}</h2>
+                        <h3>Confidence: {confidenceDisplay}%</h3>
+                        <h3>Severity: {severity}</h3>
+                        <div className="symptoms">
+                            <h3>Symptoms:</h3>
+                            <p>{symptoms}</p>
+                        </div>
+                        <div className="treatment">
+                            <h3>Treatment:</h3>
+                            <p>{Array.isArray(treatment) ? treatment.join(' ') : treatment}</p>
+                        </div>
+                        <div className="prevention">
+                            <h3>Prevention:</h3>
+                            <p>{Array.isArray(prevention) ? prevention.join(' ') : prevention}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="button-container">
+                    <button onClick={handleSave}>Save</button>
+                    <button onClick={handleRetry}>Retry</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Results;

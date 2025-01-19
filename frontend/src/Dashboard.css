@@ -1,0 +1,121 @@
+.dashboard-container {
+    display: flex;
+    height: 100vh; /* Full height of the viewport */
+}
+
+.sidebar {
+    width: 200px; /* Fixed width for sidebar */
+    background-color: #0B3D20; /* Sidebar background color */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional: Add shadow to sidebar */
+    padding: 20px;
+    color: white;
+}
+
+.sidebar a {
+    text-decoration: none; /* Remove underline from links */
+    color: white; /* Link color */
+    display: block; /* Ensure links take full width */
+    margin: 10px 0; /* Add some space between links */
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.sidebar a:hover {
+    background-color: #4CAF50; /* Change background color on hover */
+    color: #fff; /* Ensure text stays white on hover */
+}
+
+.results-content {
+    flex: 1; /* Take up the remaining space */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse; /* Remove space between table cells */
+    table-layout: fixed; /* Ensure table columns have a fixed width */
+}
+
+th, td {
+    border: 1px solid #ccc; /* Light gray border for cells */
+    padding: 12px 8px; /* Adjust padding for more readable content */
+    text-align: left; /* Align text to the left */
+    word-wrap: break-word; /* Allow long words to break and wrap */
+    white-space: normal; /* Allow text to wrap */
+}
+
+th {
+    background-color: #4CAF50; /* Green background for header */
+    color: white; /* White text for header */
+    position: sticky;
+    top: 0;
+    z-index: 1; /* Ensure header stays on top when scrolling */
+}
+
+.results-table-container {
+    flex: 1; /* Make this container take available space */
+    overflow-y: auto; /* Enable vertical scrolling if content overflows */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    border: 1px solid #ccc; /* Optional: Add border for table container */
+}
+
+.results-table-container table {
+    width: 100%; /* Ensure the table takes the full width */
+    min-width: 600px; /* Set a minimum width for the table */
+}
+
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center; /* Center pagination buttons */
+    flex-wrap: wrap;
+}
+
+.pagination button {
+    margin: 5px; /* Add space between buttons */
+    padding: 5px 10px;
+    background-color: #4CAF50; /* Green color for buttons */
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.pagination button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.upload-button {
+    background-color: #4CAF50; /* Green color */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px; /* Rounded corners */
+}
+
+.upload-button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+.button-go-back {
+    width: 30%;
+    margin-left: 70%;
+    margin-bottom: 1%;
+}
+
+.button-generate-csv {
+    width: 30%;
+    margin-left: 70%;
+    margin-bottom: 1%;
+}
